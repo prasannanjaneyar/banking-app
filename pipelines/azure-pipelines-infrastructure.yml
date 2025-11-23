@@ -1,0 +1,141 @@
+trigger:
+  branches:
+    include:
+    - main
+    - develop
+  paths:
+    include:
+    - terraform/*
+
+pr: none
+
+variables:
+  # Azure Configuration
+  azureSubscription: 'Azure-ServiceConnection'
+  
+  # Terraform Backend
+  tfBackendResourceGroup: 'rg-terraform-state'
+  tfBackendStorageAccount: 'sttfstate'
+  tfBackendContainerName: 'tfstate'
+  tfBackendKey: 'banking-app.tfstate'
+  
+  # Build Configuration
+  vmImageName: 'ubuntu-latest'
+
+stages:
+#==============================================================================
+# STAGE 1: VALIDATE TERRAFORM
+#==============================================================================
+- stage: Validate
+  displayName: 'Validate Infrastructure'
+  jobs:
+  - job: ValidateTerraform
+    displayName: 'Terraform Validation'
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: TerraformInstaller@0
+      displayName: 'Install Terraform'
+      inputs:
+        terraformVersion: 'latest'
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Init'
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        backendServiceArm: '$(azureSubscription)'
+        backendAzureRmResourceGroupName: '$(tfBackendResourceGroup)'
+        backendAzureRmStorageAccountName: '$(tfBackendStorageAccount)'
+        backendAzureRmContainerName: '$(tfBackendContainerName)'
+        backendAzureRmKey: '$(tfBackendKey)'
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Validate'
+      inputs:
+        provider: 'azurerm'
+        command: 'validate'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Plan'
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        environmentServiceNameAzureRM: '$(azureSubscription)'
+        commandOptions: '-out=tfplan'
+
+#==============================================================================
+# STAGE 2: DEPLOY INFRASTRUCTURE
+#==============================================================================
+- stage: DeployInfrastructure
+  displayName: 'Deploy Infrastructure'
+  dependsOn: Validate
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: DeployTerraform
+    displayName: 'Deploy Azure Resources'
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'banking-infrastructure'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+
+          - task: TerraformInstaller@0
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: 'latest'
+
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Init'
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+              backendServiceArm: '$(azureSubscription)'
+              backendAzureRmResourceGroupName: '$(tfBackendResourceGroup)'
+              backendAzureRmStorageAccountName: '$(tfBackendStorageAccount)'
+              backendAzureRmContainerName: '$(tfBackendContainerName)'
+              backendAzureRmKey: '$(tfBackendKey)'
+
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Apply'
+            inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+              environmentServiceNameAzureRM: '$(azureSubscription)'
+              commandOptions: '-auto-approve'
+
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Output'
+            inputs:
+              provider: 'azurerm'
+              command: 'output'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+
+          - task: Bash@3
+            displayName: 'Display Infrastructure Details'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "=================================================="
+                echo "✅ INFRASTRUCTURE DEPLOYED SUCCESSFULLY!"
+                echo "=================================================="
+                echo ""
+                echo "📋 Deployment Summary:"
+                echo "  Resource Group: banking-app"
+                echo "  ACR: bankingacr"
+                echo "  AKS: banking-aks"
+                echo "  Region: East US"
+                echo ""
+                echo "🔨 Next Steps:"
+                echo "  1. Build and push Docker image to ACR"
+                echo "  2. Deploy application to AKS"
+                echo ""
+                echo "=================================================="

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Net Banking - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .logout-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .logout-btn:hover {
+            background: #5568d3;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .account-info {
+            margin: 10px 0;
+        }
+
+        .balance {
+            font-size: 32px;
+            color: #28a745;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .section-title {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            color: #667eea;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .service-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .service-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .service-title {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .service-desc {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .loan-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .loan-info h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .loan-detail {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 Net Banking Portal</h1>
+            <div class="user-info">
+                <div id="userName">Welcome, User</div>
+                <div style="color: #666; font-size: 14px;">Account: <span id="accountNumber"></span></div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="card">
+                <h2>Account Summary</h2>
+                <div class="account-info">
+                    <strong>Account Type:</strong> <span id="accountType">Savings Account</span>
+                </div>
+                <div class="account-info">
+                    <strong>Available Balance:</strong>
+                </div>
+                <div class="balance" id="balance">₹0.00</div>
+            </div>
+        </div>
+
+        <div class="section-title">💸 Fund Transfer</div>
+        <div class="services">
+            <div class="service-card" onclick="openModal('sameBankModal')">
+                <div class="service-icon">🏦</div>
+                <div class="service-title">Same Bank Transfer</div>
+                <div class="service-desc">Transfer to accounts within our bank instantly</div>
+            </div>
+
+            <div class="service-card" onclick="openModal('otherBankModal')">
+                <div class="service-icon">🌐</div>
+                <div class="service-title">Other Bank Transfer</div>
+                <div class="service-desc">NEFT/RTGS to other bank accounts</div>
+            </div>
+        </div>
+
+        <div class="section-title">💳 Loan Application</div>
+        <div class="services">
+            <div class="service-card" onclick="openLoanModal('personal')">
+                <div class="service-icon">💰</div>
+                <div class="service-title">Personal Loan</div>
+                <div class="service-desc">Up to ₹15 lakhs @ 10.5% interest</div>
+            </div>
+
+            <div class="service-card" onclick="openLoanModal('mortgage')">
+                <div class="service-icon">🏠</div>
+                <div class="service-title">Mortgage Loan</div>
+                <div class="service-desc">Up to ₹75 lakhs @ 8.5% interest</div>
+            </div>
+
+            <div class="service-card" onclick="openLoanModal('car')">
+                <div class="service-icon">🚗</div>
+                <div class="service-title">Car Loan</div>
+                <div class="service-desc">Up to ₹20 lakhs @ 9.0% interest</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Same Bank Transfer Modal -->
+    <div id="sameBankModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('sameBankModal')">&times;</span>
+            <h2>Same Bank Transfer</h2>
+            <form onsubmit="sameBankTransfer(event)">
+                <div class="form-group">
+                    <label>Beneficiary Account Number</label>
+                    <input type="text" id="sameBankAccount" required pattern="[0-9]{10,16}" placeholder="Enter 10-16 digit account number">
+                </div>
+                <div class="form-group">
+                    <label>Amount (₹)</label>
+                    <input type="number" id="sameBankAmount" required min="1" step="0.01" placeholder="Enter amount">
+                </div>
+                <div class="form-group">
+                    <label>Remarks (Optional)</label>
+                    <input type="text" id="sameBankRemarks" placeholder="Enter remarks">
+                </div>
+                <button type="submit" class="btn">Transfer Now</button>
+                <div class="success-message" id="sameBankSuccess"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Other Bank Transfer Modal -->
+    <div id="otherBankModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('otherBankModal')">&times;</span>
+            <h2>Other Bank Transfer</h2>
+            <form onsubmit="otherBankTransfer(event)">
+                <div class="form-group">
+                    <label>Beneficiary Account Number</label>
+                    <input type="text" id="otherBankAccount" required pattern="[0-9]{10,16}" placeholder="Enter account number">
+                </div>
+                <div class="form-group">
+                    <label>IFSC Code</label>
+                    <input type="text" id="ifscCode" required pattern="[A-Z]{4}0[A-Z0-9]{6}" placeholder="e.g., SBIN0001234">
+                </div>
+                <div class="form-group">
+                    <label>Amount (₹)</label>
+                    <input type="number" id="otherBankAmount" required min="1" step="0.01" placeholder="Enter amount">
+                </div>
+                <div class="form-group">
+                    <label>Transfer Mode</label>
+                    <select id="transferMode" required>
+                        <option value="NEFT">NEFT (2-3 hours)</option>
+                        <option value="RTGS">RTGS (Immediate - Min ₹2 lakhs)</option>
+                        <option value="IMPS">IMPS (Immediate)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Remarks (Optional)</label>
+                    <input type="text" id="otherBankRemarks" placeholder="Enter remarks">
+                </div>
+                <button type="submit" class="btn">Transfer Now</button>
+                <div class="success-message" id="otherBankSuccess"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loan Application Modal -->
+    <div id="loanModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loanModal')">&times;</span>
+            <h2 id="loanTitle">Loan Application</h2>
+            <div id="loanInfo" class="loan-info"></div>
+            <form onsubmit="applyLoan(event)">
+                <input type="hidden" id="loanType">
+                <div class="form-group">
+                    <label>Loan Amount (₹)</label>
+                    <input type="number" id="loanAmount" required min="50000" step="1000" placeholder="Enter loan amount">
+                </div>
+                <div class="form-group">
+                    <label>Tenure (Months)</label>
+                    <select id="loanTenure" required>
+                        <option value="12">12 Months (1 Year)</option>
+                        <option value="24">24 Months (2 Years)</option>
+                        <option value="36">36 Months (3 Years)</option>
+                        <option value="48">48 Months (4 Years)</option>
+                        <option value="60">60 Months (5 Years)</option>
+                        <option value="84">84 Months (7 Years)</option>
+                        <option value="120">120 Months (10 Years)</option>
+                        <option value="240">240 Months (20 Years)</option>
+                        <option value="360">360 Months (30 Years)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Purpose</label>
+                    <input type="text" id="loanPurpose" required placeholder="Enter purpose of loan">
+                </div>
+                <button type="submit" class="btn">Apply for Loan</button>
+                <div class="success-message" id="loanSuccess"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const loanData = {
+            personal: {
+                name: 'Personal Loan',
+                rate: '10.5%',
+                max: '₹15,00,000',
+                tenure: 'Up to 5 years'
+            },
+            mortgage: {
+                name: 'Mortgage Loan',
+                rate: '8.5%',
+                max: '₹75,00,000',
+                tenure: 'Up to 30 years'
+            },
+            car: {
+                name: 'Car Loan',
+                rate: '9.0%',
+                max: '₹20,00,000',
+                tenure: 'Up to 7 years'
+            }
+        };
+
+        // Load account details
+        async function loadAccountDetails() {
+            try {
+                const response = await fetch('/api/account');
+                const data = await response.json();
+                
+                document.getElementById('userName').textContent = `Welcome, ${data.name}`;
+                document.getElementById('accountNumber').textContent = data.accountNumber;
+                document.getElementById('accountType').textContent = data.accountType;
+                document.getElementById('balance').textContent = `₹${data.balance.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+            } catch (error) {
+                console.error('Error loading account details:', error);
+            }
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            // Reset form
+            document.querySelector(`#${modalId} form`).reset();
+            // Hide success message
+            document.querySelector(`#${modalId} .success-message`).style.display = 'none';
+        }
+
+        function openLoanModal(type) {
+            const loan = loanData[type];
+            document.getElementById('loanType').value = type;
+            document.getElementById('loanTitle').textContent = loan.name + ' Application';
+            
+            document.getElementById('loanInfo').innerHTML = `
+                <h4>${loan.name}</h4>
+                <div class="loan-detail"><span>Interest Rate:</span><span>${loan.rate}</span></div>
+                <div class="loan-detail"><span>Maximum Amount:</span><span>${loan.max}</span></div>
+                <div class="loan-detail"><span>Tenure:</span><span>${loan.tenure}</span></div>
+            `;
+            
+            openModal('loanModal');
+        }
+
+        async function sameBankTransfer(event) {
+            event.preventDefault();
+            
+            const data = {
+                toAccount: document.getElementById('sameBankAccount').value,
+                amount: document.getElementById('sameBankAmount').value,
+                remarks: document.getElementById('sameBankRemarks').value
+            };
+
+            try {
+                const response = await fetch('/api/transfer/same-bank', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const successMsg = document.getElementById('sameBankSuccess');
+                    successMsg.innerHTML = `
+                        <strong>Transfer Successful!</strong><br>
+                        Transaction ID: ${result.transactionId}<br>
+                        Amount: ₹${parseFloat(result.amount).toLocaleString('en-IN')}<br>
+                        To Account: ${result.toAccount}
+                    `;
+                    successMsg.style.display = 'block';
+                    event.target.reset();
+                }
+            } catch (error) {
+                alert('Transfer failed. Please try again.');
+            }
+        }
+
+        async function otherBankTransfer(event) {
+            event.preventDefault();
+            
+            const data = {
+                toAccount: document.getElementById('otherBankAccount').value,
+                ifsc: document.getElementById('ifscCode').value,
+                amount: document.getElementById('otherBankAmount').value,
+                mode: document.getElementById('transferMode').value,
+                remarks: document.getElementById('otherBankRemarks').value
+            };
+
+            try {
+                const response = await fetch('/api/transfer/other-bank', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const successMsg = document.getElementById('otherBankSuccess');
+                    successMsg.innerHTML = `
+                        <strong>Transfer Initiated!</strong><br>
+                        Transaction ID: ${result.transactionId}<br>
+                        Amount: ₹${parseFloat(result.amount).toLocaleString('en-IN')}<br>
+                        Mode: ${data.mode}<br>
+                        To Account: ${result.toAccount}
+                    `;
+                    successMsg.style.display = 'block';
+                    event.target.reset();
+                }
+            } catch (error) {
+                alert('Transfer failed. Please try again.');
+            }
+        }
+
+        async function applyLoan(event) {
+            event.preventDefault();
+            
+            const data = {
+                loanType: document.getElementById('loanType').value,
+                amount: document.getElementById('loanAmount').value,
+                tenure: document.getElementById('loanTenure').value,
+                purpose: document.getElementById('loanPurpose').value
+            };
+
+            try {
+                const response = await fetch('/api/loan/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const successMsg = document.getElementById('loanSuccess');
+                    successMsg.innerHTML = `
+                        <strong>Application Submitted!</strong><br>
+                        Application ID: ${result.applicationId}<br>
+                        Loan Type: ${loanData[result.loanType].name}<br>
+                        Amount: ₹${parseFloat(result.amount).toLocaleString('en-IN')}<br>
+                        Status: ${result.status}
+                    `;
+                    successMsg.style.display = 'block';
+                    event.target.reset();
+                }
+            } catch (error) {
+                alert('Application failed. Please try again.');
+            }
+        }
+
+        function logout() {
+            window.location.href = '/login.html';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Load account details on page load
+        loadAccountDetails();
+    </script>
+</body>
+</html>
