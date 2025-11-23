@@ -23,7 +23,7 @@ variables:
   
   # Resource Configuration
   resourceGroupName: 'banking-app'
-  acrName: 'bankingacr3456'
+  acrName: 'bankingacr'
   aksName: 'banking-aks'
   k8sNamespace: 'banking'
   imageName: 'banking-app'
@@ -172,6 +172,24 @@ stages:
                   exit 1
                 fi
 
+          - task: AzureCLI@2
+            displayName: 'Attach ACR to AKS'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                set -e
+                
+                echo "Attaching ACR to AKS..."
+                
+                az aks update \
+                  --name $(aksName) \
+                  --resource-group $(resourceGroupName) \
+                  --attach-acr $(acrName)
+                
+                echo "✓ ACR attached to AKS successfully!"
+
           - task: Bash@3
             displayName: 'Display Infrastructure Details'
             inputs:
@@ -185,6 +203,7 @@ stages:
                 echo "  Resource Group: $(resourceGroupName)"
                 echo "  ACR: $(acrName)"
                 echo "  AKS: $(aksName)"
+                echo "  ACR Integration: Configured"
                 echo ""
                 echo "🚀 Next Stage: Building and Deploying Application"
                 echo "=================================================="
