@@ -91,12 +91,12 @@ resource "azurerm_kubernetes_cluster" "aks" {
   tags = var.tags
 }
 
-# Attach ACR to AKS
-resource "azurerm_role_assignment" "aks_acr" {
-  scope                = azurerm_container_registry.acr.id
-  role_definition_name = "AcrPull"
-  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
-}
+# # Attach ACR to AKS
+# resource "azurerm_role_assignment" "aks_acr" {
+#   scope                = azurerm_container_registry.acr.id
+#   role_definition_name = "AcrPull"
+#   principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
+# }
 
 # Public IP for Application Gateway
 resource "azurerm_public_ip" "appgw" {
