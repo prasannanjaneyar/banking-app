@@ -13,7 +13,7 @@ pr: none
 
 variables:
   # Azure Configuration
-  azureSubscription: 'Azure-ServiceConnection'
+  azureSubscription: 'bankapp-tf'
   
   # Terraform Backend
   tfBackendResourceGroup: 'tfstate-rg'
@@ -23,7 +23,7 @@ variables:
   
   # Resource Configuration
   resourceGroupName: 'banking-app'
-  acrName: 'bankingacr'
+  acrName: 'bankingacr3456'
   aksName: 'banking-aks'
   k8sNamespace: 'banking'
   imageName: 'banking-app'
