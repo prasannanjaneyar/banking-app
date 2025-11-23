@@ -140,6 +140,7 @@ stages:
               provider: 'azurerm'
               command: 'output'
               workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+              environmentServiceNameAzureRM: 'bankapp-tf'
 
           - task: AzureCLI@2
             displayName: 'Wait for AKS to be Ready'
