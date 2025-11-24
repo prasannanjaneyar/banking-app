@@ -190,7 +190,6 @@ stages:
             --registry $(acrName) \
             --image $(imageName):${BUILD_ID} \
             --image $(imageName):latest \
-            --file Dockerfile \
             --platform linux \
             "${SOURCE_DIR}/app"
           
