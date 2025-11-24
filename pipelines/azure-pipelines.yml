@@ -190,8 +190,8 @@ stages:
             --registry $(acrName) \
             --image $(imageName):${BUILD_ID} \
             --image $(imageName):latest \
-            --platform linux \
-            "${SOURCE_DIR}/app"
+            --file app/Dockerfile \
+            "$(Build.SourcesDirectory)"
           
           echo "✓ Build complete!"
           az acr repository show-tags --name $(acrName) --repository $(imageName) --output table
