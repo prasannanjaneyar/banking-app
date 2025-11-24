@@ -133,22 +133,15 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+
     - task: Bash@3
-      displayName: 'Debug: Show Repository Contents'
+      displayName: 'Debug: Show Repo Structure'
       inputs:
         targetType: 'inline'
         script: |
-          echo "=== SOURCE DIRECTORY ==="
+          echo "=== Show Directory Structure ==="
           echo "$(Build.SourcesDirectory)"
-          echo ""
-          echo "=== ROOT CONTENTS ==="
-          ls -la "$(Build.SourcesDirectory)"
-          echo ""
-          echo "=== SEARCHING FOR APP ==="
-          find "$(Build.SourcesDirectory)" -type d -name "app" 2>/dev/null || echo "No app dir"
-          echo ""
-          echo "=== SEARCHING FOR DOCKERFILE ==="
-          find "$(Build.SourcesDirectory)" -type f -name "Dockerfile" 2>/dev/null || echo "No Dockerfile"
+          tree -L 3 "$(Build.SourcesDirectory)" || ls -R "$(Build.SourcesDirectory)"
 
     - task: AzureCLI@2
       displayName: 'Build Image using ACR Build'
@@ -158,43 +151,34 @@ stages:
         scriptLocation: 'inlineScript'
         inlineScript: |
           set -e
-          
+
           BUILD_ID="$(Build.BuildNumber)"
-          SOURCE_DIR="$(Build.SourcesDirectory)"
-          
-          echo "Building Docker Image"
-          echo "Source: ${SOURCE_DIR}"
-          echo ""
-          
-          if [ ! -d "${SOURCE_DIR}/app" ]; then
-            echo "ERROR: app directory missing!"
-            echo "Your repository must have an app/ folder with:"
-            echo "  - Dockerfile"
-            echo "  - server.js"
-            echo "  - package.json"
-            echo "  - public/"
-            echo ""
-            echo "Please upload these files to your repository"
+          SRC_DIR="$(Build.SourcesDirectory)"
+
+          echo "=== Validating Required Files ==="
+          if [ ! -f "$SRC_DIR/app/Dockerfile" ]; then
+            echo "❌ ERROR: Dockerfile not found at app/Dockerfile"
+            echo "Directory content:"
+            ls -la "$SRC_DIR/app"
             exit 1
           fi
-          
-          if [ ! -f "${SOURCE_DIR}/app/Dockerfile" ]; then
-            echo "ERROR: Dockerfile missing in app/"
-            ls -la "${SOURCE_DIR}/app/"
-            exit 1
-          fi
-          
-          echo "✓ Files found, building..."
-          
+
+          echo "✓ Dockerfile located at app/Dockerfile"
+          echo "✓ Starting ACR build..."
+
           az acr build \
             --registry $(acrName) \
             --image $(imageName):${BUILD_ID} \
             --image $(imageName):latest \
             --file app/Dockerfile \
-            "$(Build.SourcesDirectory)"
-          
-          echo "✓ Build complete!"
-          az acr repository show-tags --name $(acrName) --repository $(imageName) --output table
+            "$SRC_DIR"
+
+          echo "✓ Build finished successfully"
+          echo "=== Available Tags ==="
+          az acr repository show-tags \
+            --name $(acrName) \
+            --repository $(imageName) \
+            --output table
 
 - stage: DeployToAKS
   displayName: 'Deploy to Kubernetes'
