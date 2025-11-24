@@ -23,7 +23,7 @@ variables:
   
   # Resource Configuration
   resourceGroupName: 'banking-app'
-  acrName: 'bankingacr'
+  acrName: 'bankingacr3456'
   aksName: 'banking-aks'
   k8sNamespace: 'banking'
   imageName: 'banking-app'
@@ -140,6 +140,7 @@ stages:
               provider: 'azurerm'
               command: 'output'
               workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+              environmentServiceNameAzureRM: 'bankapp-tf'
 
           - task: AzureCLI@2
             displayName: 'Wait for AKS to be Ready'
