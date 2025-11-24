@@ -243,6 +243,16 @@ stages:
           echo ""
           
           echo "Building image in ACR..."
+          echo "Source directory: ${SOURCE_DIR}"
+          echo "App directory: ${SOURCE_DIR}/app"
+          
+          # Check if Dockerfile exists
+          if [ ! -f "${SOURCE_DIR}/app/Dockerfile" ]; then
+            echo "ERROR: Dockerfile not found at ${SOURCE_DIR}/app/Dockerfile"
+            ls -la ${SOURCE_DIR}/app/
+            exit 1
+          fi
+          
           az acr build \
             --registry $(acrName) \
             --image $(imageName):${BUILD_ID} \
@@ -269,7 +279,6 @@ stages:
           echo "Image: $(acrName).azurecr.io/$(imageName):${BUILD_ID}"
           echo "Image: $(acrName).azurecr.io/$(imageName):latest"
           echo "=================================================="
-
 #==============================================================================
 # STAGE 4: DEPLOY TO AKS
 #==============================================================================
